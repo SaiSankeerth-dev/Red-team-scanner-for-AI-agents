@@ -34,7 +34,7 @@ test. If you'd rather not, no worries at all — I won't touch it.
 
 Thanks,
 Sai Sankeerth Voorugonda
-https://github.com/SaiSankeerth-dev/redline
+https://github.com/SaiSankeerth-dev/Red-team-scanner-for-AI-agents
 
 ---
 

@@ -1,6 +1,6 @@
 # Redline findings: 5 agent archetypes, 33 attacks each
 
-I built [Redline](https://github.com/SaiSankeerth-dev/redline), an automated
+I built [Redline](https://github.com/SaiSankeerth-dev/Red-team-scanner-for-AI-agents), an automated
 red-team scanner for AI agents, and ran its full 27-attack pack against five
 agent archetypes. **All five targets are synthetic demo agents I wrote for
 this test** — no real systems were scanned, no real data was involved. Every

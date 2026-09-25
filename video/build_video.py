@@ -170,7 +170,7 @@ def outro_card():
     img, d = base()
     f1, f2 = ImageFont.truetype(BOLD, 64), ImageFont.truetype(SANS, 32)
     for text, f, color, y in [("MIT licensed", f1, WHITE, 250),
-                              ("github.com/SaiSankeerth-dev/redline", f2, RED, 360)]:
+                              ("github.com/SaiSankeerth-dev/Red-team-scanner-for-AI-agents", f2, RED, 360)]:
         tw = d.textlength(text, font=f)
         d.text(((W - tw) / 2, y), text, font=f, fill=color)
     img.save(f"{SHOTS}/outro.png")

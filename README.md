@@ -1,5 +1,9 @@
 # Redline
 
+[![CI](https://github.com/SaiSankeerth-dev/Red-team-scanner-for-AI-agents/actions/workflows/ci.yml/badge.svg)](https://github.com/SaiSankeerth-dev/Red-team-scanner-for-AI-agents/actions/workflows/ci.yml)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 **Automated red-team scanner for AI agents** — *npm audit, but for AI agents.*
 
 Point Redline at an agent endpoint and it attacks it: prompt injection, jailbreaks, system-prompt extraction, indirect injection through retrieved documents, data exfiltration through tools, excessive agency. You get a scored security report (0–100, A–F) with full reproduction transcripts and remediation advice.
@@ -7,7 +11,7 @@ Point Redline at an agent endpoint and it attacks it: prompt injection, jailbrea
 ## Quickstart
 
 ```bash
-git clone https://github.com/SaiSankeerth-dev/redline && cd redline
+git clone https://github.com/SaiSankeerth-dev/Red-team-scanner-for-AI-agents && cd Red-team-scanner-for-AI-agents
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
