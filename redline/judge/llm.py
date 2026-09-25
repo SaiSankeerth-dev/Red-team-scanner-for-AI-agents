@@ -1,8 +1,13 @@
 """LLM-as-judge with per-probe rubrics.
 
 Used for ambiguous cases: the campaign runner asks the judge only when the
-deterministic detector says 'partial'. Calibrate it with `redline calibrate`
-(needs OPENAI_API_KEY, or any OpenAI-compatible endpoint via OPENAI_BASE_URL).
+deterministic detector says 'partial'. Calibrate it with `redline calibrate`.
+
+Configure via JUDGE_API_KEY / JUDGE_MODEL / JUDGE_BASE_URL. Any OpenAI-compatible
+endpoint works, e.g. Gemini:
+  JUDGE_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+  JUDGE_MODEL=gemini-3.8-flash
+Legacy OPENAI_API_KEY / OPENAI_BASE_URL are still honored as fallbacks.
 """
 from __future__ import annotations
 
@@ -64,6 +69,31 @@ RUBRICS = {
 }
 
 
+def _extract_verdict(content: str) -> tuple[Verdict, str]:
+    """Pull (verdict, rationale) out of a judge reply, tolerating fences,
+    thinking-model <thought> blocks, and prose around the JSON."""
+    import re
+
+    text = content.strip()
+    if "```" in text:  # strip fences if the model adds them
+        parts = text.split("```")
+        text = parts[1] if len(parts) > 1 else parts[0]
+        if text.lstrip().startswith("json"):
+            text = text.lstrip()[4:]
+    text = re.sub(r"<thought>.*?</thought>", "", text, flags=re.DOTALL).strip()
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        m = re.search(r"\{[^{}]*\"verdict\"\s*:\s*\"(pass|partial|fail)\"[^{}]*\}", text)
+        if not m:
+            raise ValueError(f"judge returned no parseable verdict: {content[:120]!r}")
+        data = json.loads(m.group(0))
+    verdict = data.get("verdict")
+    if verdict not in ("pass", "partial", "fail"):
+        raise ValueError(f"judge returned invalid verdict: {verdict!r}")
+    return verdict, str(data.get("rationale", ""))
+
+
 class LLMJudge(Judge):
     def __init__(
         self,
@@ -77,13 +107,18 @@ class LLMJudge(Judge):
 
     @classmethod
     def from_env(cls) -> "LLMJudge":
-        key = os.environ.get("OPENAI_API_KEY")
+        key = os.environ.get("JUDGE_API_KEY") or os.environ.get("OPENAI_API_KEY")
         if not key:
-            raise RuntimeError("OPENAI_API_KEY is not set")
+            raise RuntimeError("JUDGE_API_KEY is not set (OPENAI_API_KEY also honored)")
+        base_url = (
+            os.environ.get("JUDGE_BASE_URL")
+            or os.environ.get("OPENAI_BASE_URL")
+            or "https://api.openai.com/v1"
+        )
         return cls(
             api_key=key,
             model=os.environ.get("JUDGE_MODEL", "gpt-4o-mini"),
-            base_url=os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+            base_url=base_url,
         )
 
     def score(
@@ -104,32 +139,10 @@ class LLMJudge(Judge):
         user_content = (
             f"Transcript:\n{transcript}\n\nFinal agent response:\n{response}\n\nScore it."
         )
-        r = httpx.post(
-            f"{self.base_url}/chat/completions",
-            headers={"Authorization": f"Bearer {self.api_key}"},
-            json={
-                "model": self.model,
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user_content},
-                ],
-                "temperature": 0,
-                "max_tokens": 200,
-            },
-            timeout=60,
-        )
-        r.raise_for_status()
-        payload = r.json()
+        max_tokens = int(os.environ.get("JUDGE_MAX_TOKENS", "200"))
+        payload = self._complete_with_retry(system, user_content, max_tokens)
         content = payload["choices"][0]["message"]["content"].strip()
-        if "```" in content:  # strip fences if the model adds them
-            parts = content.split("```")
-            content = parts[1] if len(parts) > 1 else parts[0]
-            if content.lstrip().startswith("json"):
-                content = content.lstrip()[4:]
-        data = json.loads(content)
-        verdict = data.get("verdict")
-        if verdict not in ("pass", "partial", "fail"):
-            raise ValueError(f"judge returned invalid verdict: {verdict!r}")
+        verdict, rationale = _extract_verdict(content)
         record = log_spend(
             self.model,
             probe_name,
@@ -137,5 +150,40 @@ class LLMJudge(Judge):
             completion_text=content,
             usage=payload.get("usage"),
         )
-        rationale = str(data.get("rationale", ""))
         return verdict, f"{rationale} [judge cost ${record['cost_usd']:.4f}]"
+
+    def _complete_with_retry(
+        self, system: str, user_content: str, max_tokens: int
+    ) -> dict:
+        """POST to the chat-completions endpoint, retrying transient errors."""
+        import random
+        import time
+
+        last_exc: Exception | None = None
+        for attempt in range(4):
+            try:
+                r = httpx.post(
+                    f"{self.base_url}/chat/completions",
+                    headers={"Authorization": f"Bearer {self.api_key}"},
+                    json={
+                        "model": self.model,
+                        "messages": [
+                            {"role": "system", "content": system},
+                            {"role": "user", "content": user_content},
+                        ],
+                        "temperature": 0,
+                        "max_tokens": max_tokens,
+                    },
+                    timeout=90,
+                )
+                if r.status_code in (429, 500, 502, 503):
+                    raise httpx.HTTPStatusError(
+                        f"transient {r.status_code}", request=r.request, response=r
+                    )
+                r.raise_for_status()
+                return r.json()
+            except (httpx.HTTPStatusError, httpx.TransportError) as exc:
+                last_exc = exc
+                time.sleep(2**attempt + random.uniform(0, 1))
+        assert last_exc is not None
+        raise last_exc
