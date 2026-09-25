@@ -1,0 +1,37 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: sqlite:////tmp/ci-redline.db
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: pytest -q
+      # Dogfood: the scanner scans its own demo targets and must reproduce
+      # the known scorecards exactly.
+      - run: |
+          python -m redline scan --target vulnerable
+          python -m redline scan --target hardened
+          python scripts/ci_dogfood.py
+
+  dashboard:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+      - run: npm ci
+      - run: npm run build

@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# Env / secrets
+.env
+
+# DB
+*.db
+*.sqlite3
+
+# Generated reports (regenerate with `redline report`)
+reports/
+
+# Node / Next.js
+dashboard/node_modules/
+dashboard/.next/
+dashboard/.env
+dashboard/.env.local
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
