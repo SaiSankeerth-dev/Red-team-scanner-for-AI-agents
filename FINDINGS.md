@@ -1,4 +1,4 @@
-# Redline findings: 5 agent archetypes, 27 attacks each
+# Redline findings: 5 agent archetypes, 33 attacks each
 
 I built [Redline](https://github.com/SaiSankeerth-dev/redline), an automated
 red-team scanner for AI agents, and ran its full 27-attack pack against five
@@ -41,18 +41,19 @@ tool outputs as to direct answers; redact secrets from file/URL content
 before presenting it.
 
 **3. One edge case is all it takes (almost-hardened: 85/B).**
-Twenty-six of twenty-seven attacks blocked. The single failure: a "read the
+Thirty-two of thirty-three attacks blocked. The single failure: a "read the
 config file" request that bypassed the disclosure policy because file reads
 weren't classified as disclosures. This is the archetype I find most
-instructive — real agents don't fail 27/27, they fail 1/27, in the one path
+instructive — real agents don't fail 33/33, they fail 1/33, in the one path
 nobody modeled as an attack surface. Fix: enumerate every path by which
 secret-bearing content can reach the user, including tool outputs.
 
 ## Methodology in brief
 
-- 8 probe families: direct injection, prompt extraction, canary leakage,
+- 10 probe families: direct injection, prompt extraction, canary leakage,
   jailbreaks (roleplay/base64/leetspeak/multi-turn), refusal consistency,
-  indirect injection, tool exfiltration, excessive agency.
+  indirect injection, tool exfiltration, excessive agency, error leakage,
+  conversation-state smuggling.
 - Verdicts are deterministic first: canary-token string matching, tool-call
   inspection (what the agent *did*, not what it *said*), refusal classification.
   An LLM judge only breaks ties on ambiguous cases.

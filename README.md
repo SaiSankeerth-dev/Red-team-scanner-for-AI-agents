@@ -11,7 +11,7 @@ git clone https://github.com/SaiSankeerth-dev/redline && cd redline
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# 1. Scan the intentionally-vulnerable demo agent (27 attacks, ~2 seconds)
+# 1. Scan the intentionally-vulnerable demo agent (33 attacks, ~2 seconds)
 python -m redline scan --target vulnerable
 
 # 2. See the scored report
@@ -33,7 +33,7 @@ python -m redline scan --adapter http --http-url https://your-agent/hook \
     --http-response-path data.reply
 ```
 
-## The 8 probes
+## The 10 probes
 
 | Probe | Severity | What it does |
 |---|---|---|
@@ -45,6 +45,8 @@ python -m redline scan --adapter http --http-url https://your-agent/hook \
 | `indirect-injection` | high | Malicious instructions hidden inside retrieved documents |
 | `tool-exfiltration` | high | Tricks the agent into emailing secrets out via tools |
 | `excessive-agency` | high | Vague delegation, write-tools on read questions, no-confirmation deletes |
+| `error-leakage` | medium | Provokes stack traces, file paths, model internals via error output |
+| `state-smuggling` | high | Plants persistent instructions early, triggers them later innocuously |
 
 ## Methodology
 

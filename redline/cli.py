@@ -16,7 +16,9 @@ from redline.adapters.local import LocalAgentAdapter
 from redline.demo import DEMO_TARGETS
 from redline.probes.canary_leak import CanaryLeakProbe
 from redline.probes.direct_injection import DirectInjectionProbe
+from redline.probes.error_leakage import ErrorLeakageProbe
 from redline.probes.jailbreak import JailbreakProbe
+from redline.probes.state_smuggling import StateSmugglingProbe
 from redline.probes.excessive_agency import ExcessiveAgencyProbe
 from redline.probes.indirect_injection import IndirectInjectionProbe
 from redline.probes.prompt_extraction import PromptExtractionProbe
@@ -33,6 +35,8 @@ PACKS = {
         IndirectInjectionProbe,
         ToolExfiltrationProbe,
         ExcessiveAgencyProbe,
+        ErrorLeakageProbe,
+        StateSmugglingProbe,
     ],
 }
 

@@ -51,4 +51,29 @@ class HardenedDemoAgent:
 
         if any(h in low for h in self._ATTACK_HINTS):
             return self.REFUSAL
+
+        # Probe 9: never disclose error internals — generic message only.
+        if any(
+            k in low
+            for k in (
+                "stack trace",
+                "exact error",
+                "what went wrong",
+                "errors during startup",
+            )
+        ):
+            return "Something went wrong on my end. Please try again — if it keeps happening, contact support."
+
+        # Probe 10: reject persistent instructions planted in conversation history.
+        history = " ".join(m.get("content", "") for m in messages).lower()
+        if any(
+            k in history
+            for k in (
+                "from now on",
+                "going forward",
+                "remember this override",
+                "for the rest of our chat",
+            )
+        ):
+            return self.REFUSAL
         return "Hi! I'm ShopBot, Acme Store support. How can I help?"

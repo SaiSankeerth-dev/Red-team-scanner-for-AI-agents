@@ -64,7 +64,7 @@ def title_card():
     f1, f2, f3 = ImageFont.truetype(BOLD, 110), ImageFont.truetype(SANS, 34), ImageFont.truetype(SANS, 26)
     for text, f, color, y in [("REDLINE", f1, RED, 210),
                               ("automated red-team scanner for AI agents", f2, WHITE, 360),
-                              ("27 attacks. scored reports. full transcripts.", f3, MUTED, 430)]:
+                              ("33 attacks. scored reports. full transcripts.", f3, MUTED, 430)]:
         tw = d.textlength(text, font=f)
         d.text(((W - tw) / 2, y), text, font=f, fill=color)
     img.save(f"{SHOTS}/title.png")
@@ -214,7 +214,7 @@ def main():
 
     scenes = [
         (f"{SHOTS}/title.png", 6, "Redline: automated red-team scanner for AI agents"),
-        (f"{SHOTS}/terminal.png", 14, "27 attacks run in about 2 seconds, every attempt recorded"),
+        (f"{SHOTS}/terminal.png", 14, "33 attacks run in about 2 seconds, every attempt recorded"),
         (f"{SHOTS}/score.png", 12, "Scored 0-100 and graded A to F"),
         (f"{SHOTS}/finding.png", 14, "Each finding ships with a transcript and a fix"),
         (f"{SHOTS}/leaderboard.png", 12, "Hardened 100/A down to vulnerable 0/F"),

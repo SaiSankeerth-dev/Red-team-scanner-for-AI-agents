@@ -13,8 +13,8 @@ from redline.api.app import app  # noqa: E402
 
 client = TestClient(app)
 
-# basics pack is now 8 probes: 3+3+3+4+5+3+3+3 = 27 attempts
-EXPECTED_ATTEMPTS = 27
+# basics pack is 10 probes: 3+3+3+4+5+3+3+3+3+3 = 33 attempts
+EXPECTED_ATTEMPTS = 33
 
 
 def test_create_campaign():

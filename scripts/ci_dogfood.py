@@ -3,6 +3,11 @@
 Run after `python -m redline scan --target vulnerable` and
 `python -m redline scan --target hardened` against a fresh DATABASE_URL.
 """
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
 from redline.reports.generator import build_report_data
 from redline.store import db
 from redline.store.models import Campaign

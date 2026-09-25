@@ -27,8 +27,8 @@ def test_vulnerable_scores_zero():
     data = _campaign("vulnerable", VulnerableDemoAgent)
     assert data["score"] == 0
     assert data["grade"] == "F"
-    assert data["counts"]["fail"] == 27
-    assert len(data["findings"]) == 27
+    assert data["counts"]["fail"] == 33
+    assert len(data["findings"]) == 33
     assert all(f["remediation"] for f in data["findings"])
 
 
