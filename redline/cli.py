@@ -109,13 +109,14 @@ def cmd_scan(args: argparse.Namespace) -> int:
             probe_classes=probe_classes,
             pack_name=args.pack,
         )
+        campaign_id = result.campaign.id  # read inside the session
+        counts = result.verdict_counts()
 
     print(f"[redline] target={target_name} pack={args.pack}")
     print(f"[redline] {LEGEND}\n")
     _print_results(result)
-    counts = result.verdict_counts()
     summary = " ".join(f"{v}={counts.get(v, 0)}" for v in ("fail", "partial", "pass"))
-    print(f"[redline] saved campaign #{result.campaign.id}  ({summary})")
+    print(f"[redline] saved campaign #{campaign_id}  ({summary})")
     return 0
 
 
