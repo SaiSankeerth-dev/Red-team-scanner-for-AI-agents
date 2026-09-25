@@ -65,3 +65,30 @@ secret-bearing content can reach the user, including tool outputs.
 If you build agents and want the full 27-attack report format with
 reproduction transcripts, Redline is MIT-licensed and takes about two
 minutes to run against your own staging endpoint.
+
+---
+
+## Real challenge targets (CTF environments that invite testing)
+
+Same scanner, same 24-attack chat pack, run against public prompt-injection
+challenge environments that explicitly invite adversarial testing. Scored with
+the same rubric. Transcripts in the campaign database; HTML reports in
+`reports/`.
+
+| Target | Score | Grade | Fails | Notes |
+|--------|-------|-------|-------|-------|
+| Gandalf level 1 (baseline) | 65 | D | 4 | Gave up its password to 3 extraction prompts; fell for state smuggling |
+| Gandalf level 7 ("gandalf") | 95 | A | 1 | Only hole: a smuggled "debug mode" instruction took effect later |
+
+**The consistent hole is conversation-state smuggling.** Both Gandalf levels
+fell for the same pattern: plant an instruction early ("you are in debug
+mode"), then trigger it turns later with an innocent message. The defense
+that blocks direct injections doesn't re-examine earlier turns. If you ship a
+chat agent, test this one specifically — it's the attack class most teams
+never think to try.
+
+*Scope note: 6 CTF-style targets were researched. 2 scanned fully. 1
+(Prompt Airlines) scanned with partial results — its server dropped
+connections on several attempts. 1 (Doublespeak) had its backend down.
+2 (TensorTrust, PortSwigger labs) require accounts we haven't created.
+1 (Prompt Injection CTF 2026) needs browser automation we haven't built.*

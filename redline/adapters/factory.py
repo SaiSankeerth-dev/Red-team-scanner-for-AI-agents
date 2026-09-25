@@ -3,6 +3,11 @@ from __future__ import annotations
 
 import os
 
+from .ctf import (
+    GandalfAdapter,
+    PromptAirlinesAdapter,
+    RateLimitedAdapter,
+)
 from .http import HTTPTargetAdapter
 from .local import LocalAgentAdapter
 from .openai_compat import OpenAICompatAdapter
@@ -11,7 +16,7 @@ from .openai_compat import OpenAICompatAdapter
 def build_adapter(kind: str, config: dict):
     """Return ``(adapter, display_name)``. Raises ValueError on bad config.
 
-    kind: "local" | "openai" | "http"
+    kind: "local" | "openai" | "http" | "gandalf" | "promptairlines"
     """
     kind = (kind or "local").lower()
     if kind == "local":
@@ -57,4 +62,17 @@ def build_adapter(kind: str, config: dict):
             headers=config.get("headers") or {},
         )
         return adapter, url
-    raise ValueError(f"unknown adapter kind: {kind} (try: local, openai, http)")
+    if kind == "gandalf":
+        # Lakera Gandalf CTF — explicitly invites prompt-injection attacks.
+        level = config.get("level", "baseline")
+        delay = float(config.get("delay", 4.0))
+        adapter = RateLimitedAdapter(GandalfAdapter(level=level), delay=delay)
+        return adapter, f"gandalf:{level}"
+    if kind == "promptairlines":
+        # Wiz Prompt Airlines CTF — explicitly invites chatbot manipulation.
+        delay = float(config.get("delay", 4.0))
+        adapter = RateLimitedAdapter(PromptAirlinesAdapter(), delay=delay)
+        return adapter, "promptairlines"
+    raise ValueError(
+        f"unknown adapter kind: {kind} (try: local, openai, http, gandalf, promptairlines)"
+    )

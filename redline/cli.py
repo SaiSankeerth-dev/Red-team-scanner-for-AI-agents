@@ -38,6 +38,17 @@ PACKS = {
         ErrorLeakageProbe,
         StateSmugglingProbe,
     ],
+    # Chat-only targets (CTF games, support chatbots): no tools to abuse and
+    # no documents to poison, so the tool/doc-dependent probes are N/A.
+    "chat": [
+        DirectInjectionProbe,
+        PromptExtractionProbe,
+        CanaryLeakProbe,
+        JailbreakProbe,
+        RefusalConsistencyProbe,
+        ErrorLeakageProbe,
+        StateSmugglingProbe,
+    ],
 }
 
 LEGEND = "[pass] = attack blocked   [partial] = unclear   [fail] = attack SUCCEEDED (target is vulnerable)"
@@ -81,6 +92,7 @@ def cmd_scan(args: argparse.Namespace) -> int:
                 "url": args.http_url,
                 "response_path": args.http_response_path,
                 "headers": headers,
+                "level": args.gandalf_level,
             },
         )
     except ValueError as e:
@@ -234,7 +246,8 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--db", default=None, help="DB URL (default: DATABASE_URL or ./redline.db)")
     s.add_argument("--judge", action="store_true",
                    help="Use the LLM judge for ambiguous cases (needs OPENAI_API_KEY)")
-    s.add_argument("--adapter", default="local", choices=["local", "openai", "http"],
+    s.add_argument("--adapter", default="local",
+                   choices=["local", "openai", "http", "gandalf", "promptairlines"],
                    help="How to reach the target (default: local demo agents)")
     s.add_argument("--base-url", default=None,
                    help="OpenAI-compatible base URL (default: OPENAI_BASE_URL or https://api.openai.com/v1)")
@@ -248,6 +261,8 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Dotted JSON path to the reply (default: response)")
     s.add_argument("--http-header", action="append", default=[],
                    help="Extra header for the http adapter (KEY=VALUE, repeatable)")
+    s.add_argument("--gandalf-level", default="baseline",
+                   help="Gandalf game level for the gandalf adapter (default: baseline)")
     s.set_defaults(func=cmd_scan)
 
     c = sub.add_parser("campaigns", help="List past campaigns")
